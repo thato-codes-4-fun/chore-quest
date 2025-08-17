@@ -413,6 +413,8 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
               margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
               child: TextFormField(
                 controller: controller,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.start,
                 decoration: InputDecoration(
                   labelText: label,
                   hintText: hint,

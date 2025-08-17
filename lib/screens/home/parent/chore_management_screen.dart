@@ -366,6 +366,8 @@ class _ChoreManagementScreenState extends State<ChoreManagementScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextFormField(
+                        textDirection: TextDirection.ltr,
+                        textAlign: TextAlign.start,
                         decoration: const InputDecoration(
                           labelText: 'Chore Name',
                           border: OutlineInputBorder(),
@@ -383,6 +385,8 @@ class _ChoreManagementScreenState extends State<ChoreManagementScreen>
                       ),
                       const SizedBox(height: AppConstants.paddingMedium),
                       TextFormField(
+                        textDirection: TextDirection.ltr,
+                        textAlign: TextAlign.start,
                         decoration: const InputDecoration(
                           labelText: 'Description',
                           border: OutlineInputBorder(),
@@ -401,6 +405,8 @@ class _ChoreManagementScreenState extends State<ChoreManagementScreen>
                       ),
                       const SizedBox(height: AppConstants.paddingMedium),
                       TextFormField(
+                        textDirection: TextDirection.ltr,
+                        textAlign: TextAlign.start,
                         decoration: const InputDecoration(
                           labelText: 'Points',
                           border: OutlineInputBorder(),

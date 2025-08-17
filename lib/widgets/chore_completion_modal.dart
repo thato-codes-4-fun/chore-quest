@@ -295,6 +295,8 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
         const SizedBox(height: AppConstants.paddingSmall),
         TextField(
           maxLines: 3,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.start,
           decoration: InputDecoration(
             hintText: 'Add any notes about how you completed this chore...',
             border: OutlineInputBorder(

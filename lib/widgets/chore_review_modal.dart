@@ -400,6 +400,8 @@ class _ChoreReviewModalState extends State<ChoreReviewModal> {
               TextField(
                 controller: _rejectionReasonController,
                 maxLines: 3,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.start,
                 decoration: const InputDecoration(
                   hintText: 'Enter rejection reason...',
                   border: OutlineInputBorder(),

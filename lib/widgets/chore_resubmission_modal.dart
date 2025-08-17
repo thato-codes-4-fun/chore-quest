@@ -23,13 +23,19 @@ class _ChoreResubmissionModalState extends State<ChoreResubmissionModal> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
-  String _notes = '';
+  late TextEditingController _notesController;
 
   @override
   void initState() {
     super.initState();
     // Pre-fill notes with any existing notes
-    _notes = widget.chore.notes ?? '';
+    _notesController = TextEditingController(text: widget.chore.notes ?? '');
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
   }
 
   @override
@@ -420,7 +426,9 @@ class _ChoreResubmissionModalState extends State<ChoreResubmissionModal> {
         const SizedBox(height: AppConstants.paddingMedium),
         TextField(
           maxLines: 4,
-          controller: TextEditingController(text: _notes),
+          controller: _notesController,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.start,
           decoration: InputDecoration(
             hintText: 'Describe what you did to improve this chore...',
             border: OutlineInputBorder(
@@ -434,11 +442,6 @@ class _ChoreResubmissionModalState extends State<ChoreResubmissionModal> {
               ),
             ),
           ),
-          onChanged: (value) {
-            setState(() {
-              _notes = value;
-            });
-          },
         ),
       ],
     );
@@ -542,7 +545,7 @@ class _ChoreResubmissionModalState extends State<ChoreResubmissionModal> {
       final imageUrl = 'placeholder_image_url_${DateTime.now().millisecondsSinceEpoch}';
       
       // Call the resubmission callback
-      await widget.onResubmit(imageUrl, _notes);
+      await widget.onResubmit(imageUrl, _notesController.text);
       
       if (mounted) {
         Navigator.of(context).pop();

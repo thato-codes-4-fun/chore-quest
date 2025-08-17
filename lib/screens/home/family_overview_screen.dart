@@ -99,7 +99,7 @@ class _FamilyOverviewScreenState extends State<FamilyOverviewScreen> {
               ),
               const SizedBox(width: AppConstants.paddingMedium),
               Expanded(
-                child: Column(
+        child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -426,7 +426,7 @@ class _FamilyOverviewScreenState extends State<FamilyOverviewScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
       ),
-      child: ListTile(
+              child: ListTile(
         leading: CircleAvatar(
           backgroundColor: chore.status == ChoreStatus.approved 
               ? AppConstants.successColor 
