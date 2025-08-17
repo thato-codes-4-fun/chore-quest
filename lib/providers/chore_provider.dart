@@ -278,42 +278,7 @@ class ChoreProvider extends ChangeNotifier {
       // Update in memory
       _chores[choreIndex] = updatedChore;
 
-      // Get user's current balance
-      final userResponse = await _supabase
-          .from(SupabaseConstants.usersTable)
-          .select('balance')
-          .eq('id', chore.assigneeId)
-          .single();
-
-      final currentBalance = (userResponse['balance'] ?? 0.0).toDouble();
-      
-      // Calculate new balance
-      final newBalance = currentBalance + chore.value;
-
-      // Update user's balance
-      await _supabase
-          .from(SupabaseConstants.usersTable)
-          .update({'balance': newBalance})
-          .eq('id', chore.assigneeId);
-
-      // Create transaction record
-      final now = DateTime.now();
-      final transaction = Transaction(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: chore.assigneeId,
-        type: TransactionType.choreCompleted,
-        amount: chore.value, // Positive because points are earned
-        balanceAfter: newBalance,
-        relatedId: choreId,
-        relatedType: 'chore',
-        description: 'Completed: ${chore.name}',
-        createdAt: now,
-      );
-
-      // Save transaction to database
-      await _supabase
-          .from(SupabaseConstants.transactionsTable)
-          .insert(transaction.toJson());
+      // Note: Points are NOT awarded here. They will be awarded when the chore is approved by the parent.
 
       SchedulerBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
@@ -349,6 +314,139 @@ class ChoreProvider extends ChangeNotifier {
         updatedAt: DateTime.now(),
         proofImageUrl: imageUrl,
         notes: notes,
+      );
+
+      // Update in Supabase
+      await _supabase
+          .from(SupabaseConstants.choresTable)
+          .update(updatedChore.toJson())
+          .eq('id', choreId);
+
+      // Update in Hive
+      await _choreBox.put(choreId, updatedChore);
+
+      // Update in memory
+      _chores[choreIndex] = updatedChore;
+
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+
+    } catch (e) {
+      _error = e.toString();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+      rethrow;
+    }
+  }
+
+  Future<void> approveChore(String choreId) async {
+    try {
+      // Find the chore
+      final choreIndex = _chores.indexWhere((c) => c.id == choreId);
+      if (choreIndex == -1) {
+        throw Exception('Chore not found');
+      }
+
+      final chore = _chores[choreIndex];
+      
+      // Check if chore is in completed status
+      if (chore.status != ChoreStatus.completed) {
+        throw Exception('Chore is not in completed status');
+      }
+
+      // Update chore status to approved
+      final updatedChore = chore.copyWith(
+        status: ChoreStatus.approved,
+        approvedAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Update in Supabase
+      await _supabase
+          .from(SupabaseConstants.choresTable)
+          .update(updatedChore.toJson())
+          .eq('id', choreId);
+
+      // Update in Hive
+      await _choreBox.put(choreId, updatedChore);
+
+      // Update in memory
+      _chores[choreIndex] = updatedChore;
+
+      // Get user's current balance
+      final userResponse = await _supabase
+          .from(SupabaseConstants.usersTable)
+          .select('balance')
+          .eq('id', chore.assigneeId)
+          .single();
+
+      final currentBalance = (userResponse['balance'] ?? 0.0).toDouble();
+      
+      // Calculate new balance - only award points when approved
+      final newBalance = currentBalance + chore.value;
+
+      // Update user's balance
+      await _supabase
+          .from(SupabaseConstants.usersTable)
+          .update({'balance': newBalance})
+          .eq('id', chore.assigneeId);
+
+      // Create transaction record
+      final now = DateTime.now();
+      final transaction = Transaction(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: chore.assigneeId,
+        type: TransactionType.choreCompleted,
+        amount: chore.value, // Positive because points are earned
+        balanceAfter: newBalance,
+        relatedId: choreId,
+        relatedType: 'chore',
+        description: 'Approved: ${chore.name}',
+        createdAt: now,
+      );
+
+      // Save transaction to database
+      await _supabase
+          .from(SupabaseConstants.transactionsTable)
+          .insert(transaction.toJson());
+
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+
+    } catch (e) {
+      _error = e.toString();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+      rethrow;
+    }
+  }
+
+  Future<void> rejectChore(String choreId, {String? rejectionReason}) async {
+    try {
+      // Find the chore
+      final choreIndex = _chores.indexWhere((c) => c.id == choreId);
+      if (choreIndex == -1) {
+        throw Exception('Chore not found');
+      }
+
+      final chore = _chores[choreIndex];
+      
+      // Check if chore is in completed status
+      if (chore.status != ChoreStatus.completed) {
+        throw Exception('Chore is not in completed status');
+      }
+
+      // Update chore status to rejected with rejection reason
+      final updatedChore = chore.copyWith(
+        status: ChoreStatus.rejected,
+        updatedAt: DateTime.now(),
+        notes: rejectionReason != null 
+            ? '${chore.notes ?? ''}\n\nRejection Reason: $rejectionReason'
+            : chore.notes,
       );
 
       // Update in Supabase

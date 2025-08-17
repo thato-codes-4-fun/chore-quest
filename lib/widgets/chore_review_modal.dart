@@ -1,29 +1,33 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../constants/constants.dart';
 import '../models/models.dart';
 
-class ChoreCompletionModal extends StatefulWidget {
+class ChoreReviewModal extends StatefulWidget {
   final Chore chore;
-  final Function(String imageUrl) onComplete;
+  final Function() onApprove;
+  final Function(String reason) onReject;
 
-  const ChoreCompletionModal({
+  const ChoreReviewModal({
     super.key,
     required this.chore,
-    required this.onComplete,
+    required this.onApprove,
+    required this.onReject,
   });
 
   @override
-  State<ChoreCompletionModal> createState() => _ChoreCompletionModalState();
+  State<ChoreReviewModal> createState() => _ChoreReviewModalState();
 }
 
-class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
-  File? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+class _ChoreReviewModalState extends State<ChoreReviewModal> {
   bool _isLoading = false;
-  String? _notes;
+  final TextEditingController _rejectionReasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _rejectionReasonController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +49,7 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
                   children: [
                     _buildChoreInfo(),
                     const SizedBox(height: AppConstants.paddingLarge),
-                    _buildPhotoSection(),
+                    _buildProofSection(),
                     const SizedBox(height: AppConstants.paddingLarge),
                     _buildNotesSection(),
                     const SizedBox(height: AppConstants.paddingLarge),
@@ -73,14 +77,14 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
       child: Row(
         children: [
           const Icon(
-            Icons.check_circle,
+            Icons.rate_review,
             color: Colors.white,
             size: 24,
           ),
           const SizedBox(width: AppConstants.paddingMedium),
           const Expanded(
             child: Text(
-              'Complete Chore',
+              'Review Chore',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -156,18 +160,36 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
                 color: AppConstants.textSecondaryColor,
               ),
             ),
+            const SizedBox(height: AppConstants.paddingSmall),
+            Row(
+              children: [
+                Icon(
+                  Icons.person,
+                  size: 16,
+                  color: AppConstants.textSecondaryColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Assigned to: ${widget.chore.assigneeId}', // You might want to show the actual name here
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppConstants.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPhotoSection() {
+  Widget _buildProofSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Photo Proof',
+          'Proof of Completion',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -175,15 +197,7 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
           ),
         ),
         const SizedBox(height: AppConstants.paddingSmall),
-        Text(
-          'Take a photo to show that you completed this chore',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppConstants.textSecondaryColor,
-          ),
-        ),
-        const SizedBox(height: AppConstants.paddingMedium),
-        if (_selectedImage != null) ...[
+        if (widget.chore.proofImageUrl != null && widget.chore.proofImageUrl!.isNotEmpty) ...[
           Container(
             width: double.infinity,
             height: 200,
@@ -195,85 +209,62 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-              child: Image.file(
-                _selectedImage!,
-                fit: BoxFit.cover,
+              child: Container(
+                color: AppConstants.textSecondaryColor.withValues(alpha: 0.1),
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.photo,
+                        size: 48,
+                        color: AppConstants.textSecondaryColor,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Proof Image Submitted',
+                        style: TextStyle(
+                          color: AppConstants.textSecondaryColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: AppConstants.paddingSmall),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _takePhoto,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Retake Photo'),
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingSmall),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _pickImage,
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('Choose Photo'),
-                ),
-              ),
-            ],
           ),
         ] else ...[
           Container(
             width: double.infinity,
-            height: 200,
+            padding: const EdgeInsets.all(AppConstants.paddingMedium),
             decoration: BoxDecoration(
-              color: AppConstants.textSecondaryColor.withValues(alpha: 0.1),
+              color: AppConstants.errorColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
               border: Border.all(
-                color: AppConstants.textSecondaryColor.withValues(alpha: 0.2),
-                style: BorderStyle.solid,
+                color: AppConstants.errorColor.withValues(alpha: 0.3),
               ),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
               children: [
                 Icon(
-                  Icons.camera_alt_outlined,
-                  size: 48,
-                  color: AppConstants.textSecondaryColor.withValues(alpha: 0.5),
+                  Icons.warning,
+                  color: AppConstants.errorColor,
+                  size: 20,
                 ),
-                const SizedBox(height: AppConstants.paddingSmall),
-                Text(
-                  'No photo selected',
-                  style: TextStyle(
-                    color: AppConstants.textSecondaryColor.withValues(alpha: 0.7),
+                const SizedBox(width: AppConstants.paddingSmall),
+                Expanded(
+                  child: Text(
+                    'No proof image provided',
+                    style: TextStyle(
+                      color: AppConstants.errorColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: AppConstants.paddingSmall),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _takePhoto,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Take Photo'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppConstants.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingSmall),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _pickImage,
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('Choose Photo'),
-                ),
-              ),
-            ],
           ),
         ],
       ],
@@ -281,11 +272,15 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
   }
 
   Widget _buildNotesSection() {
+    if (widget.chore.notes == null || widget.chore.notes!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Notes (Optional)',
+          'Notes from Child',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -293,136 +288,160 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
           ),
         ),
         const SizedBox(height: AppConstants.paddingSmall),
-        TextField(
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: 'Add any notes about how you completed this chore...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-              borderSide: const BorderSide(
-                color: AppConstants.primaryColor,
-                width: 2,
-              ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+          decoration: BoxDecoration(
+            color: AppConstants.primaryColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+            border: Border.all(
+              color: AppConstants.primaryColor.withValues(alpha: 0.3),
             ),
           ),
-          onChanged: (value) {
-            setState(() {
-              _notes = value;
-            });
-          },
+          child: Text(
+            widget.chore.notes!,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppConstants.textPrimaryColor,
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildActionButtons() {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ),
-        const SizedBox(width: AppConstants.paddingMedium),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _isLoading || _selectedImage == null ? null : _completeChore,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.successColor,
-              foregroundColor: Colors.white,
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _approveChore,
+                icon: const Icon(Icons.check_circle),
+                label: const Text('Approve'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppConstants.successColor,
+                  foregroundColor: Colors.white,
+                ),
+              ),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Text('Complete Chore'),
-          ),
+            const SizedBox(width: AppConstants.paddingMedium),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _showRejectionDialog,
+                icon: const Icon(Icons.cancel),
+                label: const Text('Reject'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppConstants.errorColor,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.paddingMedium),
+        OutlinedButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
         ),
       ],
     );
   }
 
-  Future<void> _takePhoto() async {
-    try {
-      final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
-
-      if (photo != null) {
-        setState(() {
-          _selectedImage = File(photo.path);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error taking photo: $e'),
-            backgroundColor: AppConstants.errorColor,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error picking image: $e'),
-            backgroundColor: AppConstants.errorColor,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _completeChore() async {
-    if (_selectedImage == null) return;
-
+  Future<void> _approveChore() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // For now, we'll use a placeholder image URL
-      // In a real app, you'd upload the image to Supabase Storage
-      final imageUrl = 'placeholder_image_url_${DateTime.now().millisecondsSinceEpoch}';
-      
-      // Call the completion callback
-      await widget.onComplete(imageUrl);
+      await widget.onApprove();
       
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Chore submitted! Waiting for parent approval.'),
+            content: Text('Chore approved! +${widget.chore.value.toInt()} points awarded.'),
+            backgroundColor: AppConstants.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error approving chore: $e'),
+            backgroundColor: AppConstants.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showRejectionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reject Chore'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Please provide a reason for rejecting this chore. This will help the child understand what needs to be improved.',
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              TextField(
+                controller: _rejectionReasonController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Enter rejection reason...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _rejectChore();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppConstants.errorColor,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Reject'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _rejectChore() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await widget.onReject(_rejectionReasonController.text);
+      
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Chore rejected. Child can resubmit with improvements.'),
             backgroundColor: AppConstants.warningColor,
           ),
         );
@@ -431,7 +450,7 @@ class _ChoreCompletionModalState extends State<ChoreCompletionModal> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error completing chore: $e'),
+            content: Text('Error rejecting chore: $e'),
             backgroundColor: AppConstants.errorColor,
           ),
         );
