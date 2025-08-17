@@ -216,4 +216,90 @@ class RewardProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  Future<void> redeemReward(String rewardId, String userId) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Find the reward
+      final rewardIndex = _rewards.indexWhere((r) => r.id == rewardId);
+      if (rewardIndex == -1) {
+        throw Exception('Reward not found');
+      }
+
+      final reward = _rewards[rewardIndex];
+      
+      // Check if reward is active
+      if (!reward.isActive) {
+        throw Exception('Reward is not available');
+      }
+
+      // Get user's current balance
+      final userResponse = await _supabase
+          .from(SupabaseConstants.usersTable)
+          .select('balance')
+          .eq('id', userId)
+          .single();
+
+      final currentBalance = (userResponse['balance'] ?? 0.0).toDouble();
+      
+      // Check if user has enough points
+      if (currentBalance < reward.cost) {
+        throw Exception('Insufficient points');
+      }
+
+      // Calculate new balance
+      final newBalance = currentBalance - reward.cost;
+
+      // Update user's balance
+      await _supabase
+          .from(SupabaseConstants.usersTable)
+          .update({'balance': newBalance})
+          .eq('id', userId);
+
+      // Create transaction record
+      final now = DateTime.now();
+      final transaction = Transaction(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        type: TransactionType.rewardRedeemed,
+        amount: -reward.cost, // Negative because points are spent
+        balanceAfter: newBalance,
+        relatedId: rewardId,
+        relatedType: 'reward',
+        description: 'Redeemed: ${reward.name}',
+        createdAt: now,
+      );
+
+      // Save transaction to database
+      await _supabase
+          .from(SupabaseConstants.transactionsTable)
+          .insert(transaction.toJson());
+
+      // Mark reward as redeemed (optional - you might want to keep it active for multiple redemptions)
+      final updatedReward = reward.copyWith(
+        isActive: false, // Mark as redeemed
+        updatedAt: now,
+      );
+
+      // Update reward in database
+      await _supabase
+          .from(SupabaseConstants.rewardsTable)
+          .update(updatedReward.toJson())
+          .eq('id', rewardId);
+
+      // Update in memory
+      _rewards[rewardIndex] = updatedReward;
+
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

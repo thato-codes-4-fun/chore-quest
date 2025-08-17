@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/constants.dart';
+import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/chore_provider.dart';
 import '../../providers/reward_provider.dart';
 import '../auth/login_screen.dart';
+import 'child/child_home_screen.dart';
 import 'parent/chore_management_screen.dart';
 import 'parent/reward_management_screen.dart';
 import 'family_overview_screen.dart';
@@ -31,37 +33,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppConstants.primaryColor,
-        unselectedItemColor: AppConstants.textSecondaryColor,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        final currentUser = userProvider.currentUser;
+        
+        // Route to child screen if user is a kid
+        if (currentUser?.role == UserRole.kid) {
+          return const ChildHomeScreen();
+        }
+        
+        // Show parent screen for parents
+        return Scaffold(
+          body: _screens[_currentIndex],
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppConstants.primaryColor,
+            unselectedItemColor: AppConstants.textSecondaryColor,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard),
+                label: 'Dashboard',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.assignment),
+                label: 'Chores',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.card_giftcard),
+                label: 'Rewards',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.family_restroom),
+                label: 'Family',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Chores',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.card_giftcard),
-            label: 'Rewards',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.family_restroom),
-            label: 'Family',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

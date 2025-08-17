@@ -203,4 +203,66 @@ class ChoreProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  Future<void> completeChore(String choreId) async {
+    try {
+      // Find the chore
+      final choreIndex = _chores.indexWhere((c) => c.id == choreId);
+      if (choreIndex == -1) {
+        throw Exception('Chore not found');
+      }
+
+      final chore = _chores[choreIndex];
+      
+      // Check if chore is in assigned status
+      if (chore.status != ChoreStatus.assigned) {
+        throw Exception('Chore is not in assigned status');
+      }
+
+      // Update chore status to completed
+      await updateChoreStatus(choreId, ChoreStatus.completed);
+
+      // Get user's current balance
+      final userResponse = await _supabase
+          .from(SupabaseConstants.usersTable)
+          .select('balance')
+          .eq('id', chore.assigneeId)
+          .single();
+
+      final currentBalance = (userResponse['balance'] ?? 0.0).toDouble();
+      
+      // Calculate new balance
+      final newBalance = currentBalance + chore.value;
+
+      // Update user's balance
+      await _supabase
+          .from(SupabaseConstants.usersTable)
+          .update({'balance': newBalance})
+          .eq('id', chore.assigneeId);
+
+      // Create transaction record
+      final now = DateTime.now();
+      final transaction = Transaction(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: chore.assigneeId,
+        type: TransactionType.choreCompleted,
+        amount: chore.value, // Positive because points are earned
+        balanceAfter: newBalance,
+        relatedId: choreId,
+        relatedType: 'chore',
+        description: 'Completed: ${chore.name}',
+        createdAt: now,
+      );
+
+      // Save transaction to database
+      await _supabase
+          .from(SupabaseConstants.transactionsTable)
+          .insert(transaction.toJson());
+
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
 }
