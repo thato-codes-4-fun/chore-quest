@@ -242,7 +242,7 @@ class ChoreProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> completeChore(String choreId) async {
+  Future<void> completeChore(String choreId, {String? imageUrl, String? notes}) async {
     try {
       // Find the chore
       final choreIndex = _chores.indexWhere((c) => c.id == choreId);
@@ -257,8 +257,26 @@ class ChoreProvider extends ChangeNotifier {
         throw Exception('Chore is not in assigned status');
       }
 
-      // Update chore status to completed
-      await updateChoreStatus(choreId, ChoreStatus.completed);
+      // Update chore status to completed with image URL and notes
+      final updatedChore = chore.copyWith(
+        status: ChoreStatus.completed,
+        completedAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        proofImageUrl: imageUrl,
+        notes: notes,
+      );
+
+      // Update in Supabase
+      await _supabase
+          .from(SupabaseConstants.choresTable)
+          .update(updatedChore.toJson())
+          .eq('id', choreId);
+
+      // Update in Hive
+      await _choreBox.put(choreId, updatedChore);
+
+      // Update in memory
+      _chores[choreIndex] = updatedChore;
 
       // Get user's current balance
       final userResponse = await _supabase
@@ -296,6 +314,58 @@ class ChoreProvider extends ChangeNotifier {
       await _supabase
           .from(SupabaseConstants.transactionsTable)
           .insert(transaction.toJson());
+
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+
+    } catch (e) {
+      _error = e.toString();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+      rethrow;
+    }
+  }
+
+  Future<void> resubmitChore(String choreId, {String? imageUrl, String? notes}) async {
+    try {
+      // Find the chore
+      final choreIndex = _chores.indexWhere((c) => c.id == choreId);
+      if (choreIndex == -1) {
+        throw Exception('Chore not found');
+      }
+
+      final chore = _chores[choreIndex];
+      
+      // Check if chore is in rejected status
+      if (chore.status != ChoreStatus.rejected) {
+        throw Exception('Chore is not in rejected status');
+      }
+
+      // Update chore status back to assigned with new image URL and notes
+      final updatedChore = chore.copyWith(
+        status: ChoreStatus.assigned,
+        updatedAt: DateTime.now(),
+        proofImageUrl: imageUrl,
+        notes: notes,
+      );
+
+      // Update in Supabase
+      await _supabase
+          .from(SupabaseConstants.choresTable)
+          .update(updatedChore.toJson())
+          .eq('id', choreId);
+
+      // Update in Hive
+      await _choreBox.put(choreId, updatedChore);
+
+      // Update in memory
+      _chores[choreIndex] = updatedChore;
+
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
     } catch (e) {
       _error = e.toString();

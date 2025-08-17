@@ -7,6 +7,7 @@ class ChoreCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showActions;
   final VoidCallback? onComplete;
+  final VoidCallback? onResubmit;
 
   const ChoreCard({
     super.key,
@@ -14,6 +15,7 @@ class ChoreCard extends StatelessWidget {
     this.onTap,
     this.showActions = false,
     this.onComplete,
+    this.onResubmit,
   });
 
   @override
@@ -80,6 +82,79 @@ class ChoreCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: AppConstants.paddingMedium),
+              
+              // Show proof image if available
+              if (chore.proofImageUrl != null && chore.proofImageUrl!.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                    border: Border.all(
+                      color: AppConstants.textSecondaryColor.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                    child: Container(
+                      color: AppConstants.textSecondaryColor.withValues(alpha: 0.1),
+                      child: const Center(
+                        child: Icon(
+                          Icons.photo,
+                          size: 32,
+                          color: AppConstants.textSecondaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppConstants.paddingSmall),
+              ],
+              
+              // Show notes if available
+              if (chore.notes != null && chore.notes!.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppConstants.paddingSmall),
+                  decoration: BoxDecoration(
+                    color: AppConstants.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.note,
+                            size: 14,
+                            color: AppConstants.primaryColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Notes:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppConstants.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        chore.notes!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppConstants.textPrimaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppConstants.paddingSmall),
+              ],
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -101,22 +176,40 @@ class ChoreCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (showActions && onComplete != null)
-                    ElevatedButton(
-                      onPressed: onComplete,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppConstants.primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                  if (showActions) ...[
+                    if (chore.status == ChoreStatus.assigned && onComplete != null)
+                      ElevatedButton(
+                        onPressed: onComplete,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppConstants.primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.paddingMedium,
+                            vertical: AppConstants.paddingSmall,
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.paddingMedium,
-                          vertical: AppConstants.paddingSmall,
-                        ),
+                        child: const Text('Complete'),
                       ),
-                      child: const Text('Complete'),
-                    ),
+                    if (chore.status == ChoreStatus.rejected && onResubmit != null)
+                      ElevatedButton(
+                        onPressed: onResubmit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppConstants.warningColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.paddingMedium,
+                            vertical: AppConstants.paddingSmall,
+                          ),
+                        ),
+                        child: const Text('Resubmit'),
+                      ),
+                  ],
                 ],
               ),
             ],

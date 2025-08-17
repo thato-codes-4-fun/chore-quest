@@ -10,6 +10,8 @@ import '../../../providers/user_provider.dart';
 import '../../../screens/splash_screen.dart';
 import '../../../widgets/chore_card.dart';
 import '../../../widgets/reward_card.dart';
+import '../../../widgets/chore_completion_modal.dart';
+import '../../../widgets/chore_resubmission_modal.dart';
 
 class ChildHomeScreen extends StatefulWidget {
   const ChildHomeScreen({super.key});
@@ -156,11 +158,17 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
     return Consumer<ChoreProvider>(
       builder: (context, choreProvider, child) {
         final assignedChores = choreProvider.chores.where((chore) => 
-          chore.status == ChoreStatus.assigned || chore.status == ChoreStatus.completed
+          chore.status == ChoreStatus.assigned || 
+          chore.status == ChoreStatus.completed ||
+          chore.status == ChoreStatus.rejected
         ).toList();
         
         final completedChores = assignedChores.where((chore) => 
           chore.status == ChoreStatus.completed
+        ).length;
+        
+        final rejectedChores = assignedChores.where((chore) => 
+          chore.status == ChoreStatus.rejected
         ).length;
         
         final totalChores = assignedChores.length;
@@ -196,6 +204,27 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(AppConstants.primaryColor),
               minHeight: 8,
             ),
+            if (rejectedChores > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.warning,
+                    size: 14,
+                    color: AppConstants.warningColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$rejectedChores chore${rejectedChores > 1 ? 's' : ''} need${rejectedChores > 1 ? '' : 's'} resubmission',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppConstants.warningColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         );
       },
@@ -219,7 +248,9 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
     return Consumer<ChoreProvider>(
       builder: (context, choreProvider, child) {
         final assignedChores = choreProvider.chores.where((chore) => 
-          chore.status == ChoreStatus.assigned || chore.status == ChoreStatus.completed
+          chore.status == ChoreStatus.assigned || 
+          chore.status == ChoreStatus.completed ||
+          chore.status == ChoreStatus.rejected
         ).toList();
 
         if (assignedChores.isEmpty) {
@@ -240,8 +271,9 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
               child: ChoreCard(
                 chore: chore,
                 onTap: () => _showChoreDetails(chore),
-                showActions: chore.status == ChoreStatus.assigned,
-                onComplete: () => _completeChore(chore),
+                showActions: chore.status == ChoreStatus.assigned || chore.status == ChoreStatus.rejected,
+                onComplete: chore.status == ChoreStatus.assigned ? () => _completeChore(chore) : null,
+                onResubmit: chore.status == ChoreStatus.rejected ? () => _resubmitChore(chore) : null,
               ),
             );
           },
@@ -539,28 +571,43 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
   }
 
   void _completeChore(Chore chore) async {
-    try {
-      final choreProvider = Provider.of<ChoreProvider>(context, listen: false);
-      await choreProvider.completeChore(chore.id);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Chore completed! +${chore.value} points'),
-            backgroundColor: AppConstants.successColor,
-          ),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return ChoreCompletionModal(
+          chore: chore,
+          onComplete: (String imageUrl) async {
+            try {
+              final choreProvider = Provider.of<ChoreProvider>(context, listen: false);
+              await choreProvider.completeChore(chore.id, imageUrl: imageUrl);
+            } catch (e) {
+              rethrow;
+            }
+          },
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error completing chore: $e'),
-            backgroundColor: AppConstants.errorColor,
-          ),
+      },
+    );
+  }
+
+  void _resubmitChore(Chore chore) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return ChoreResubmissionModal(
+          chore: chore,
+          onResubmit: (String imageUrl, String notes) async {
+            try {
+              final choreProvider = Provider.of<ChoreProvider>(context, listen: false);
+              await choreProvider.resubmitChore(chore.id, imageUrl: imageUrl, notes: notes);
+            } catch (e) {
+              rethrow;
+            }
+          },
         );
-      }
-    }
+      },
+    );
   }
 
   void _showRewardDetails(Reward reward) {
