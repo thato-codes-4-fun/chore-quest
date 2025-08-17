@@ -515,15 +515,16 @@ class _ChoreManagementScreenState extends State<ChoreManagementScreen>
                           );
                         }
                       } catch (e) {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Failed to add chore: ${e.toString()}',
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Failed to add chore: ${e.toString()}',
+                              ),
+                              backgroundColor: AppConstants.errorColor,
                             ),
-                            backgroundColor: AppConstants.errorColor,
-                          ),
-                        );
+                          );
+                        }
                       }
                     }
                   },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/models.dart';
 import '../constants/constants.dart';
@@ -27,6 +28,10 @@ class ChoreProvider extends ChangeNotifier {
 
   List<Chore> getChoresByAssigner(String assignerId) {
     return _chores.where((chore) => chore.assignedById == assignerId).toList();
+  }
+
+  String _generateUUID() {
+    return const Uuid().v4();
   }
 
   Future<void> loadChores({String? userId, UserRole? userRole}) async {
@@ -85,7 +90,7 @@ class ChoreProvider extends ChangeNotifier {
 
       final now = DateTime.now();
       final chore = Chore(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: _generateUUID(),
         name: name,
         description: description,
         value: value,
@@ -111,6 +116,7 @@ class ChoreProvider extends ChangeNotifier {
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+      rethrow; // Re-throw the error so the UI can handle it
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -167,6 +173,7 @@ class ChoreProvider extends ChangeNotifier {
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+      rethrow; // Re-throw the error so the UI can handle it
     } finally {
       _isLoading = false;
       notifyListeners();
