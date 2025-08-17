@@ -7,6 +7,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/chore_provider.dart';
 import '../../../providers/reward_provider.dart';
 import '../../../providers/user_provider.dart';
+import '../../../screens/splash_screen.dart';
 import '../../../widgets/chore_card.dart';
 import '../../../widgets/reward_card.dart';
 
@@ -618,7 +619,11 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
       await authProvider.signOut();
       
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        // Navigate to splash screen which will handle auth state
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+          (route) => false, // Remove all previous routes
+        );
       }
     } catch (e) {
       if (mounted) {
