@@ -127,6 +127,31 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
   Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Additional validation for kid signup
+    if (_selectedRole == UserRole.kid) {
+      if (_selectedParentId == null || _selectedParentId!.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Please select a parent for your account'),
+            backgroundColor: AppConstants.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      
+      if (_availableParents.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No parents available. Please ask a parent to create an account first.'),
+            backgroundColor: AppConstants.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -170,6 +195,8 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
       );
 
       print('Auth response: ${authResponse?.user?.id}');
+      print('Auth session: ${authResponse?.session?.accessToken}');
+      print('Auth error: ${authResponse?.user?.appMetadata}');
 
       // Wait a moment for auth state to settle
       await Future.delayed(const Duration(milliseconds: 2000));
@@ -215,6 +242,9 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
+      } else {
+        // Auth response is null - this means signup failed
+        throw Exception('Failed to create account. Please check your email and password and try again.');
       }
     } catch (e) {
       if (mounted) {

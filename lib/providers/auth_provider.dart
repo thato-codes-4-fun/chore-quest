@@ -51,7 +51,8 @@ class AuthProvider extends ChangeNotifier {
       return response;
     } catch (e) {
       _error = e.toString();
-      return null;
+      print('Auth signup error: $e');
+      rethrow; // Re-throw the error so the signup screen can handle it
     } finally {
       _isLoading = false;
       notifyListeners();
