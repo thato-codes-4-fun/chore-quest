@@ -78,6 +78,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = e.toString();
+      rethrow; // Re-throw so the UI can handle it
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -91,8 +92,12 @@ class AuthProvider extends ChangeNotifier {
 
       await _supabase.auth.signOut();
       _currentUser = null;
+      
+      // Note: Cache clearing should be handled by the UI layer
+      // after successful sign out
     } catch (e) {
       _error = e.toString();
+      rethrow; // Re-throw so the UI can handle it
     } finally {
       _isLoading = false;
       notifyListeners();

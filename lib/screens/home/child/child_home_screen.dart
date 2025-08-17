@@ -616,7 +616,10 @@ class _ChildHomeScreenState extends State<ChildHomeScreen> {
   void _signOut() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
       await authProvider.signOut();
+      await userProvider.clearAllCache();
       
       if (mounted) {
         // Navigate to splash screen which will handle auth state

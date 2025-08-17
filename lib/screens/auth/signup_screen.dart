@@ -218,6 +218,9 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
         }
 
         if (mounted) {
+          // Clear cache and refresh user data
+          await userProvider.clearCacheAndRefresh();
+
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

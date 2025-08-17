@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../constants/constants.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/user_provider.dart';
 import '../home/home_screen.dart';
 import 'signup_screen.dart';
 
@@ -138,6 +139,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       );
 
       if (mounted && authProvider.isAuthenticated) {
+        // Clear cache and refresh user data
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        await userProvider.clearCacheAndRefresh();
+
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

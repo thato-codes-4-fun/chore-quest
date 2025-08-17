@@ -31,35 +31,95 @@ class UserProvider extends ChangeNotifier {
   Future<void> _loadCurrentUser() async {
     final supabaseUser = _supabase.auth.currentUser;
     if (supabaseUser != null) {
-      // Try to get from local cache first
-      _currentUser = _userBox.get(supabaseUser.id);
-      
-      // If not in cache, try to load from Supabase
-      if (_currentUser == null) {
-        try {
-          final response = await _supabase
-              .from(SupabaseConstants.usersTable)
-              .select()
-              .eq('id', supabaseUser.id)
-              .single();
-          
-          _currentUser = User.fromJson(response);
-          
-          // Cache in Hive
-          await _userBox.put(_currentUser!.id, _currentUser!);
-          
-          // Load family members
-          await loadFamilyMembers();
-        } catch (e) {
-          // User profile doesn't exist yet (might be during signup)
-          print('User profile not found: ${e.toString()}');
-        }
-      } else {
-        // User found in cache, load family members
+      try {
+        // Always load fresh data from Supabase to ensure we have the latest user info
+        final response = await _supabase
+            .from(SupabaseConstants.usersTable)
+            .select()
+            .eq('id', supabaseUser.id)
+            .single();
+        
+        _currentUser = User.fromJson(response);
+        
+        // Cache in Hive
+        await _userBox.put(_currentUser!.id, _currentUser!);
+        
+        // Load family members
         await loadFamilyMembers();
+        
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
+      } catch (e) {
+        // User profile doesn't exist yet (might be during signup)
+        print('User profile not found: ${e.toString()}');
+        _currentUser = null;
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
+    } else {
+      _currentUser = null;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
+  }
+
+  Future<void> clearCacheAndRefresh() async {
+    try {
+      _isLoading = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+
+      // Clear current user and family members
+      _currentUser = null;
+      _familyMembers = [];
       
-      notifyListeners();
+      // Clear Hive cache
+      await _userBox.clear();
+      
+      // Reload current user
+      await _loadCurrentUser();
+      
+    } catch (e) {
+      _error = e.toString();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    } finally {
+      _isLoading = false;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
+  }
+
+  Future<void> clearAllCache() async {
+    try {
+      _isLoading = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+
+      // Clear current user and family members
+      _currentUser = null;
+      _familyMembers = [];
+      
+      // Clear Hive cache
+      await _userBox.clear();
+      
+    } catch (e) {
+      _error = e.toString();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    } finally {
+      _isLoading = false;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
