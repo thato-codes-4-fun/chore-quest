@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -37,7 +38,9 @@ class ChoreProvider extends ChangeNotifier {
   Future<void> loadChores({String? userId, UserRole? userRole}) async {
     try {
       _isLoading = true;
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
       List<Map<String, dynamic>> response;
       
@@ -73,7 +76,9 @@ class ChoreProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -86,7 +91,9 @@ class ChoreProvider extends ChangeNotifier {
   }) async {
     try {
       _isLoading = true;
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
       final now = DateTime.now();
       final chore = Chore(
@@ -112,21 +119,29 @@ class ChoreProvider extends ChangeNotifier {
       // Add to memory
       _chores.add(chore);
 
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
       _error = e.toString();
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
       rethrow; // Re-throw the error so the UI can handle it
     } finally {
       _isLoading = false;
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
   Future<void> updateChoreStatus(String choreId, ChoreStatus status) async {
     try {
       _isLoading = true;
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
       final choreIndex = _chores.indexWhere((c) => c.id == choreId);
       if (choreIndex == -1) return;
@@ -169,14 +184,20 @@ class ChoreProvider extends ChangeNotifier {
       // Update in memory
       _chores[choreIndex] = updatedChore;
 
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
       _error = e.toString();
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
       rethrow; // Re-throw the error so the UI can handle it
     } finally {
       _isLoading = false;
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -203,16 +224,22 @@ class ChoreProvider extends ChangeNotifier {
       // Update in memory
       _chores[choreIndex] = updatedChore;
 
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
       _error = e.toString();
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
   void clearError() {
     _error = null;
-    notifyListeners();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   Future<void> completeChore(String choreId) async {
@@ -272,7 +299,9 @@ class ChoreProvider extends ChangeNotifier {
 
     } catch (e) {
       _error = e.toString();
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
       rethrow;
     }
   }
