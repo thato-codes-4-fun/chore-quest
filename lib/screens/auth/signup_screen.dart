@@ -207,11 +207,11 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
         try {
           await userProvider.createUserWithId(
             userId: authResponse!.user!.id,
-            name: _nameController.text.trim(),
-            email: _emailController.text.trim(),
-            role: _selectedRole,
-            parentId: _selectedRole == UserRole.kid ? _selectedParentId : null,
-          );
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          role: _selectedRole,
+          parentId: _selectedRole == UserRole.kid ? _selectedParentId : null,
+        );
         } catch (e) {
           print('Error creating user profile: $e');
           rethrow;
@@ -359,7 +359,7 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
           child: Container(
             width: 100,
             height: 100,
-            decoration: BoxDecoration(
+                    decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -369,20 +369,20 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                 ],
               ),
               borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: AppConstants.primaryColor.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppConstants.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
               Icons.cleaning_services_rounded,
               size: 50,
-              color: Colors.white,
-            ),
-          ),
+                      color: Colors.white,
+                    ),
+                  ),
         );
       },
     );
@@ -420,7 +420,7 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                             (isPassword ? _obscurePassword : _obscureConfirmPassword)
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
-                            color: AppConstants.textSecondaryColor,
+                      color: AppConstants.textSecondaryColor,
                           ),
                           onPressed: () {
                             setState(() {
@@ -433,30 +433,30 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                           },
                         )
                       : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
                     borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
                     borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                    borderSide: const BorderSide(
-                      color: AppConstants.primaryColor,
-                      width: 2,
-                    ),
-                  ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                borderSide: const BorderSide(
+                                  color: AppConstants.primaryColor,
+                                  width: 2,
+                                ),
+                              ),
                   errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                    borderSide: const BorderSide(
+                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                borderSide: const BorderSide(
                       color: AppConstants.errorColor,
                       width: 1,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppConstants.paddingMedium,
                     vertical: AppConstants.paddingMedium,
@@ -493,17 +493,17 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'I am a:',
-                    style: AppConstants.bodyStyle.copyWith(
-                      fontWeight: FontWeight.w600,
+                          Text(
+                            'I am a:',
+                            style: AppConstants.bodyStyle.copyWith(
+                              fontWeight: FontWeight.w600,
                       color: AppConstants.textPrimaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingSmall),
-                  Row(
-                    children: [
-                      Expanded(
+                            ),
+                          ),
+                          const SizedBox(height: AppConstants.paddingSmall),
+                          Row(
+                            children: [
+                              Expanded(
                         child: _buildRoleCard(
                           role: UserRole.parent,
                           title: 'Parent',
@@ -513,17 +513,17 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                         ),
                       ),
                       const SizedBox(width: AppConstants.paddingSmall),
-                      Expanded(
+                              Expanded(
                         child: _buildRoleCard(
                           role: UserRole.kid,
                           title: 'Kid',
                           subtitle: 'Complete chores',
                           icon: Icons.child_care_rounded,
                           isSelected: _selectedRole == UserRole.kid,
-                        ),
-                      ),
-                    ],
-                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                 ],
               ),
             ),
@@ -612,45 +612,45 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             child: Container(
               margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
               child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Select Parent',
+                              decoration: InputDecoration(
+                                labelText: 'Select Parent',
                   prefixIcon: const Icon(Icons.family_restroom_rounded, color: AppConstants.primaryColor),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
                     borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
                     borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                    borderSide: const BorderSide(
-                      color: AppConstants.primaryColor,
-                      width: 2,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                  borderSide: const BorderSide(
+                                    color: AppConstants.primaryColor,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppConstants.paddingMedium,
                     vertical: AppConstants.paddingMedium,
                   ),
-                ),
-                value: _selectedParentId,
-                validator: _validateParentSelection,
-                items: _availableParents.map((parent) {
-                  return DropdownMenuItem<String>(
-                    value: parent.id,
-                    child: Text(parent.name),
-                  );
-                }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    _selectedParentId = value;
-                  });
-                },
-              ),
+                              ),
+                              value: _selectedParentId,
+                              validator: _validateParentSelection,
+                              items: _availableParents.map((parent) {
+                                return DropdownMenuItem<String>(
+                                  value: parent.id,
+                                  child: Text(parent.name),
+                                );
+                              }).toList(),
+                              onChanged: (String? value) {
+                                setState(() {
+                                  _selectedParentId = value;
+                                });
+                              },
+                            ),
             ),
           ),
         );
@@ -666,40 +666,40 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
           scale: _buttonAnimation.value,
           child: Container(
             width: double.infinity,
-            height: 56,
+                            height: 56,
             margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-                          child: ElevatedButton(
+                            child: ElevatedButton(
                 onPressed: _isLoading ? null : () {
                   HapticFeedback.mediumImpact();
                   _handleSignup();
                 },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppConstants.primaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                ),
                 elevation: 4,
                 shadowColor: AppConstants.primaryColor.withValues(alpha: 0.3),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
-          ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Create Account',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            ),
+                          ),
         );
       },
     );
@@ -720,8 +720,8 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                 
                 // Logo and Title
                 _buildAnimatedLogo(),
-                
-                const SizedBox(height: AppConstants.paddingLarge),
+
+                          const SizedBox(height: AppConstants.paddingLarge),
                 
                 Text(
                   AppConstants.appName,
@@ -927,34 +927,34 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                       // Signup Button
                       _buildSignupButton(),
 
-                      // Login Link
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Already have an account? ',
-                            style: TextStyle(
-                              color: AppConstants.textSecondaryColor,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(
-                              'Sign In',
-                              style: TextStyle(
-                                color: AppConstants.primaryColor,
-                                fontWeight: FontWeight.w600,
+                          // Login Link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Already have an account? ',
+                                style: TextStyle(
+                                  color: AppConstants.textSecondaryColor,
+                                ),
                               ),
-                            ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    color: AppConstants.primaryColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
             ),
           ),
         ),

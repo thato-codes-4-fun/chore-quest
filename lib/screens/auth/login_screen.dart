@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           child: Container(
             width: 100,
             height: 100,
-            decoration: BoxDecoration(
+                    decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -231,18 +231,18 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                 ],
               ),
               borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: AppConstants.primaryColor.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppConstants.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
               Icons.cleaning_services_rounded,
               size: 50,
-              color: Colors.white,
+                      color: Colors.white,
             ),
           ),
         );
@@ -402,32 +402,32 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                 _buildAnimatedLogo(),
                 
                 const SizedBox(height: AppConstants.paddingLarge),
-                
-                Text(
-                  AppConstants.appName,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppConstants.textPrimaryColor,
-                    letterSpacing: 1.2,
+                  
+                  Text(
+                    AppConstants.appName,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: AppConstants.textPrimaryColor,
+                      letterSpacing: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: AppConstants.paddingSmall),
-                
-                Text(
-                  'Welcome back!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: AppConstants.textSecondaryColor,
-                    fontWeight: FontWeight.w500,
+                  
+                  const SizedBox(height: AppConstants.paddingSmall),
+                  
+                  Text(
+                    'Welcome back!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppConstants.textSecondaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: AppConstants.paddingXLarge),
-
+                  
+                  const SizedBox(height: AppConstants.paddingXLarge),
+                  
                 // Form Card
                 Container(
                   width: double.infinity,
@@ -476,10 +476,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         isPassword: true,
                         textInputAction: TextInputAction.done,
                         onSubmitted: _handleLogin,
-                      ),
-
-                      const SizedBox(height: AppConstants.paddingMedium),
-
+                  ),
+                  
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
                       // Forgot Password Link
                       Align(
                         alignment: Alignment.centerRight,
@@ -497,45 +497,45 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                           child: Text(
                             'Forgot Password?',
                             style: TextStyle(
-                              color: AppConstants.primaryColor,
+                          color: AppConstants.primaryColor,
                               fontWeight: FontWeight.w500,
                               fontSize: 14,
                             ),
                           ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: AppConstants.paddingLarge),
+                  
+                  // Login Button
+                      _buildLoginButton(),
+                  
+                  // Sign Up Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account? ",
+                        style: TextStyle(
+                          color: AppConstants.textSecondaryColor,
                         ),
                       ),
-
-                      const SizedBox(height: AppConstants.paddingLarge),
-
-                      // Login Button
-                      _buildLoginButton(),
-
-                      // Sign Up Link
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Don't have an account? ",
-                            style: TextStyle(
-                              color: AppConstants.textSecondaryColor,
-                            ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => const SignupScreen()),
+                          );
+                        },
+                        child: Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: AppConstants.primaryColor,
+                            fontWeight: FontWeight.w600,
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const SignupScreen()),
-                              );
-                            },
-                            child: Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                color: AppConstants.primaryColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                    ],
+                  ),
                     ],
                   ),
                 ),

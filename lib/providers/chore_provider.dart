@@ -25,6 +25,10 @@ class ChoreProvider extends ChangeNotifier {
     return _chores.where((chore) => chore.assigneeId == assigneeId).toList();
   }
 
+  List<Chore> getChoresByAssigner(String assignerId) {
+    return _chores.where((chore) => chore.assignedById == assignerId).toList();
+  }
+
   Future<void> loadChores({String? userId, UserRole? userRole}) async {
     try {
       _isLoading = true;
@@ -37,14 +41,14 @@ class ChoreProvider extends ChangeNotifier {
         response = await _supabase
             .from(SupabaseConstants.choresTable)
             .select()
-            .eq('assigned_by_id', userId!)
+            .eq('assigned_by', userId!)
             .order('created_at', ascending: false);
       } else if (userRole == UserRole.kid) {
         // Load all chores assigned to this kid
         response = await _supabase
             .from(SupabaseConstants.choresTable)
             .select()
-            .eq('assignee_id', userId!)
+            .eq('assigned_to', userId!)
             .order('created_at', ascending: false);
       } else {
         // Load all chores (for admin or debugging)
